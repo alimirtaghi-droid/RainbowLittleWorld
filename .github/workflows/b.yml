@@ -1,0 +1,38 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'microsoft'
+        java-version: '17'
+
+    - name: Install Godot
+      run: |
+        mkdir godot_bin
+        curl -L https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux_x86_64.zip -o godot.zip
+        unzip godot.zip -d godot_bin
+        chmod +x godot_bin/Godot*
+
+    - name: Export APK
+      run: |
+        # نکته: باید حتماً در تنظیمات Godot خود، یک Export Preset با نام دقیق "Android" ساخته باشی
+        ./godot_bin/Godot --headless --export-release "Android" build/game.apk
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: game-apk
+        path: build/game.apk
